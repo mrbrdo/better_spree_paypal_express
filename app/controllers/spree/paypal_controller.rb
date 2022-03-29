@@ -34,11 +34,11 @@ module Spree
           redirect_to provider.express_checkout_url(pp_response, useraction: 'commit')
         else
           flash[:error] = Spree.t('flash.generic_error', scope: 'paypal', reasons: pp_response.errors.map(&:long_message).join(" "))
-          redirect_to checkout_state_path(:payment)
+          redirect_to checkout_state_path(:payment, locale: current_locale)
         end
       rescue SocketError
         flash[:error] = Spree.t('flash.connection_failed', scope: 'paypal')
-        redirect_to checkout_state_path(:payment)
+        redirect_to checkout_state_path(:payment, locale: current_locale)
       end
     end
 
@@ -59,14 +59,14 @@ module Spree
         session[:order_id] = nil
         redirect_to completion_route(order)
       else
-        redirect_to checkout_state_path(order.state)
+        redirect_to checkout_state_path(order.state, locale: current_locale)
       end
     end
 
     def cancel
       flash[:notice] = Spree.t('flash.cancel', scope: 'paypal')
       order = current_order || raise(ActiveRecord::RecordNotFound)
-      redirect_to checkout_state_path(order.state, paypal_cancel_token: params[:token])
+      redirect_to checkout_state_path(order.state, paypal_cancel_token: params[:token], locale: current_locale)
     end
 
     private
@@ -167,7 +167,7 @@ module Spree
     end
 
     def completion_route(order)
-      order_path(order)
+      order_path(order, locale: current_locale)
     end
 
     def address_required?
